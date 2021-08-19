@@ -2,6 +2,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/user");
+const path = require("path");
 
 // Accès aux variables d'environnement
 require("dotenv").config();
@@ -41,7 +42,8 @@ app.use((req, res, next) => {
 // Pour extraire l'objet JSON des requêtes entrantes
 app.use(express.json());
 
-// Enregistrement de la route
+// Enregistrement des routes
+app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/api/auth", userRoutes);
 
 // Exportation de l'application
