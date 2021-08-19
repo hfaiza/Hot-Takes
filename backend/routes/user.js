@@ -7,8 +7,8 @@ const auth = require("../middleware/auth");
 const router = express.Router();
 
 // Création des routes
-router.post("/signup", auth, userController.signup);
-router.post("/login", auth, userController.login);
+router.post("/signup", userController.signup);
+router.post("/login", userController.login);
 
 // Exportation du routeur
 module.exports = router;

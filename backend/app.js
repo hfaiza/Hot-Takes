@@ -2,6 +2,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/user");
+const sauceRoutes = require("./routes/sauce");
 const path = require("path");
 
 // Accès aux variables d'environnement
@@ -44,6 +45,7 @@ app.use(express.json());
 
 // Enregistrement des routes
 app.use("/images", express.static(path.join(__dirname, "images")));
+app.use("/api/sauces", sauceRoutes);
 app.use("/api/auth", userRoutes);
 
 // Exportation de l'application
