@@ -11,6 +11,10 @@ const createSauce = async (req, res) => {
     imageUrl: `${req.protocol}://${req.get("host")}/images/${
       req.file.filename
     }`,
+    likes: 0,
+    dislikes: 0,
+    usersLiked: [],
+    usersdisLiked: [],
   });
   try {
     await sauce.save();
@@ -79,9 +83,69 @@ const getAllSauces = async (req, res) => {
   }
 };
 
+// Middleware de (dis)like d'une sauce
+const likeAndDislikeSauce = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const like = req.body.like;
+
+    if (like == 1) {
+      try {
+        await Sauce.updateOne(
+          { _id: req.params.id },
+          { $inc: { likes: +1 }, $push: { usersLiked: userId } }
+        );
+        res.status(200).json({ message: "Like confirmé !" });
+      } catch (error) {
+        res.status(400).json({ error: error });
+      }
+    } else if (like == -1) {
+      try {
+        await Sauce.updateOne(
+          { _id: req.params.id },
+          { $inc: { dislikes: +1 }, $push: { usersDisliked: userId } }
+        );
+        res.status(200).json({ message: "Dislike confirmé !" });
+      } catch (error) {
+        res.status(400).json({ error: error });
+      }
+    } else if (like == 0) {
+      const sauce = await Sauce.findOne({ _id: req.params.id });
+      const userAlreadyLiked = sauce.usersLiked.includes(userId);
+      const userAlreadyDisliked = sauce.usersDisliked.includes(userId);
+
+      if (userAlreadyLiked) {
+        try {
+          await Sauce.updateOne(
+            { _id: req.params.id },
+            { $inc: { likes: -1 }, $pull: { usersLiked: userId } }
+          );
+          res.status(200).json({ message: "Like annulé !" });
+        } catch (error) {
+          res.status(400).json({ error: error });
+        }
+      }
+      if (userAlreadyDisliked) {
+        try {
+          await Sauce.updateOne(
+            { _id: req.params.id },
+            { $inc: { dislikes: -1 }, $pull: { usersDisliked: userId } }
+          );
+          res.status(200).json({ message: "Dislike annulé !" });
+        } catch (error) {
+          res.status(400).json({ error: error });
+        }
+      }
+    }
+  } catch (error) {
+    res.status(400).json({ error: error });
+  }
+};
+
 // Exportation des middlewares
 exports.createSauce = createSauce;
 exports.getOneSauce = getOneSauce;
 exports.modifySauce = modifySauce;
 exports.deleteSauce = deleteSauce;
 exports.getAllSauces = getAllSauces;
+exports.likeAndDislikeSauce = likeAndDislikeSauce;
