@@ -5,6 +5,7 @@ const fs = require("fs");
 // Middleware de création d'une sauce
 const createSauce = async (req, res) => {
   const sauceObject = await JSON.parse(req.body.sauce);
+  console.log(sauceObject);
   delete sauceObject._id;
   const sauce = new Sauce({
     ...sauceObject,
@@ -86,10 +87,13 @@ const getAllSauces = async (req, res) => {
 // Middleware de (dis)like d'une sauce
 const likeAndDislikeSauce = async (req, res) => {
   try {
-    const userId = req.body.userId;
-    const like = req.body.like;
+    const userId = await req.body.userId;
+    const like = await req.body.like;
+    const sauce = await Sauce.findOne({ _id: req.params.id });
+    const userAlreadyLiked = await sauce.usersLiked.includes(userId);
+    const userAlreadyDisliked = await sauce.usersDisliked.includes(userId);
 
-    if (like == 1) {
+    if (like == 1 && !userAlreadyLiked && !userAlreadyDisliked) {
       try {
         await Sauce.updateOne(
           { _id: req.params.id },
@@ -99,7 +103,7 @@ const likeAndDislikeSauce = async (req, res) => {
       } catch (error) {
         res.status(400).json({ error: error });
       }
-    } else if (like == -1) {
+    } else if (like == -1 && !userAlreadyLiked && !userAlreadyDisliked) {
       try {
         await Sauce.updateOne(
           { _id: req.params.id },
@@ -110,10 +114,6 @@ const likeAndDislikeSauce = async (req, res) => {
         res.status(400).json({ error: error });
       }
     } else if (like == 0) {
-      const sauce = await Sauce.findOne({ _id: req.params.id });
-      const userAlreadyLiked = sauce.usersLiked.includes(userId);
-      const userAlreadyDisliked = sauce.usersDisliked.includes(userId);
-
       if (userAlreadyLiked) {
         try {
           await Sauce.updateOne(
@@ -136,6 +136,8 @@ const likeAndDislikeSauce = async (req, res) => {
           res.status(400).json({ error: error });
         }
       }
+    } else if (userAlreadyLiked || userAlreadyDisliked) {
+      res.status(400).json({ error: "Sauce déjà (dis)likée !" });
     }
   } catch (error) {
     res.status(400).json({ error: error });
