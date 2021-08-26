@@ -6,7 +6,7 @@ const User = require("../models/user");
 // Middleware d'inscription
 const signup = async (req, res) => {
   try {
-    const hashedPassword = bcrypt.hash(req.body.password, 10);
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const user = new User({ email: req.body.email, password: hashedPassword });
     await user.save();
     res.status(201).json({ message: "Utilisateur créé." });
