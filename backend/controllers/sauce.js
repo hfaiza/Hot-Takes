@@ -4,24 +4,20 @@ const fs = require("fs");
 
 // Middleware de création d'une sauce
 const createSauce = async (req, res) => {
-  const sauceObject = await JSON.parse(req.body.sauce);
-  console.log(sauceObject);
-  delete sauceObject._id;
+  const sauceObject = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
     ...sauceObject,
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${
-      req.file.filename
-    }`,
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
     likes: 0,
     dislikes: 0,
     usersLiked: [],
-    usersdisLiked: [],
+    usersDisliked: [],
   });
   try {
     await sauce.save();
     res.status(201).json({ message: "Sauce enregistrée !" });
   } catch (error) {
-    res.status(400).json({ error });
+    res.status(500).json({ error });
   }
 };
 
@@ -40,19 +36,14 @@ const modifySauce = async (req, res) => {
   const sauceObject = req.file
     ? {
         ...JSON.parse(req.body.sauce),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${
-          req.file.filename
-        }`,
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
       }
     : { ...req.body };
   try {
-    await Sauce.updateOne(
-      { _id: req.params.id },
-      { ...sauceObject, _id: req.params.id }
-    );
+    await Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id });
     res.status(200).json({ message: "Sauce modifiée !" });
   } catch (error) {
-    res.status(400).json({ error });
+    res.status(500).json({ error });
   }
 };
 
@@ -80,67 +71,46 @@ const getAllSauces = async (req, res) => {
     const sauces = await Sauce.find();
     res.status(200).json(sauces);
   } catch (error) {
-    res.status(400).json({ error: error });
+    res.status(404).json({ error: error });
+  }
+};
+
+// Factorisation du middleware de (dis)like d'une sauce
+const updateLikeOrDislike = async (req, res, likeStatus, likeOperator, arrayOperator, usersArray) => {
+  const userId = req.body.userId;
+  try {
+    await Sauce.updateOne(
+      { _id: req.params.id },
+      { $inc: { [likeStatus]: likeOperator }, [arrayOperator]: { [usersArray]: userId } }
+    );
+    res.status(200).json({ message: "L'opération s'est bien déroulée !" });
+  } catch (error) {
+    res.status(500).json({ error: error });
   }
 };
 
 // Middleware de (dis)like d'une sauce
 const likeAndDislikeSauce = async (req, res) => {
   try {
-    const userId = await req.body.userId;
-    const like = await req.body.like;
+    const userId = req.body.userId;
+    const like = req.body.like;
     const sauce = await Sauce.findOne({ _id: req.params.id });
-    const userAlreadyLiked = await sauce.usersLiked.includes(userId);
-    const userAlreadyDisliked = await sauce.usersDisliked.includes(userId);
+    const userAlreadyLiked = sauce.usersLiked.includes(userId);
+    const userAlreadyDisliked = sauce.usersDisliked.includes(userId);
 
     if (like == 1 && !userAlreadyLiked && !userAlreadyDisliked) {
-      try {
-        await Sauce.updateOne(
-          { _id: req.params.id },
-          { $inc: { likes: +1 }, $push: { usersLiked: userId } }
-        );
-        res.status(200).json({ message: "Like confirmé !" });
-      } catch (error) {
-        res.status(400).json({ error: error });
-      }
+      updateLikeOrDislike(req, res, "likes", +1, "$push", "usersLiked");
     } else if (like == -1 && !userAlreadyLiked && !userAlreadyDisliked) {
-      try {
-        await Sauce.updateOne(
-          { _id: req.params.id },
-          { $inc: { dislikes: +1 }, $push: { usersDisliked: userId } }
-        );
-        res.status(200).json({ message: "Dislike confirmé !" });
-      } catch (error) {
-        res.status(400).json({ error: error });
-      }
-    } else if (like == 0) {
-      if (userAlreadyLiked) {
-        try {
-          await Sauce.updateOne(
-            { _id: req.params.id },
-            { $inc: { likes: -1 }, $pull: { usersLiked: userId } }
-          );
-          res.status(200).json({ message: "Like annulé !" });
-        } catch (error) {
-          res.status(400).json({ error: error });
-        }
-      }
-      if (userAlreadyDisliked) {
-        try {
-          await Sauce.updateOne(
-            { _id: req.params.id },
-            { $inc: { dislikes: -1 }, $pull: { usersDisliked: userId } }
-          );
-          res.status(200).json({ message: "Dislike annulé !" });
-        } catch (error) {
-          res.status(400).json({ error: error });
-        }
-      }
-    } else if (userAlreadyLiked || userAlreadyDisliked) {
-      res.status(400).json({ error: "Sauce déjà (dis)likée !" });
+      updateLikeOrDislike(req, res, "dislikes", +1, "$push", "usersDisliked");
+    } else if (like == 0 && userAlreadyLiked) {
+      updateLikeOrDislike(req, res, "likes", -1, "$pull", "usersLiked");
+    } else if (like == 0 && userAlreadyDisliked) {
+      updateLikeOrDislike(req, res, "dislikes", -1, "$pull", "usersDisliked");
+    } else {
+      res.status(400).json({ error: "Requête invalide !" });
     }
   } catch (error) {
-    res.status(400).json({ error: error });
+    res.status(500).json({ error: error });
   }
 };
 

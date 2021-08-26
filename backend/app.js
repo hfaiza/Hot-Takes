@@ -21,8 +21,8 @@ const mongooseConnect = async () => {
       useCreateIndex: true,
     });
     console.log("Connexion à MongoDB réussie !");
-  } catch {
-    console.log("Connexion à MongoDB échouée...");
+  } catch (error) {
+    console.log("Connexion à MongoDB échouée !", error);
   }
 };
 
