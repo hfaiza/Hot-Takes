@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const userRoutes = require("./routes/user");
 const sauceRoutes = require("./routes/sauce");
 const path = require("path");
+const helmet = require("helmet");
 
 // Accès aux variables d'environnement
 require("dotenv").config();
@@ -11,6 +12,9 @@ const MONGODB_SECRET = process.env.MONGODB;
 
 // Création de l'application
 const app = express();
+
+// Utilisation de Helmet
+app.use(helmet());
 
 // Connexion à MongoDB :
 const mongooseConnect = async () => {

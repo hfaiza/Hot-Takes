@@ -22,7 +22,7 @@ const login = async (req, res) => {
     if (!user) {
       res.status(401).json({ error: "Utilisateur non trouvé." });
     }
-    const valid = bcrypt.compare(req.body.password, user.password);
+    const valid = await bcrypt.compare(req.body.password, user.password);
     if (!valid) {
       res.status(401).json({ error: "Mot de passe incorrect." });
     }

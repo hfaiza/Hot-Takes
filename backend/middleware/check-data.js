@@ -56,10 +56,9 @@ const checkSauceData = (req, res, next) => {
   const description = sauce.description.trim();
 
   if (descriptionRegex.test(description) == false) {
-    res.status(403).json({
-      error:
-        "Description invalide. Seuls les lettres, espaces, points et virgules sont acceptés. Le texte doit contenir entre 20 et 250 caractères.",
-    });
+    throw new Error(
+      "Description invalide. Seuls les lettres, espaces, points et virgules sont acceptés. Le texte doit contenir entre 20 et 250 caractères."
+    );
   }
 
   delete sauce.heat;
@@ -72,10 +71,9 @@ const checkSauceData = (req, res, next) => {
   valuesArray.forEach((value) => {
     value.trim();
     if (valuesRegex.test(value) == false) {
-      res.status(403).json({
-        error:
-          "Donnée invalide. Seuls les lettres et espaces sont acceptés. Le texte doit contenir entre 5 et 40 caractères.",
-      });
+      throw new Error(
+        "Donnée invalide. Seuls les lettres et espaces sont acceptés. Le texte doit contenir entre 5 et 40 caractères."
+      );
     }
   });
   next();
