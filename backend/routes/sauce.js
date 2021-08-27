@@ -11,8 +11,8 @@ const router = express.Router();
 // Création des routes
 router.get("/", auth, sauceController.getAllSauces);
 router.get("/:id", auth, sauceController.getOneSauce);
-router.post("/", auth, multer, sauceController.createSauce);
-router.put("/:id", auth, validity.checkUserId, multer, sauceController.modifySauce);
+router.post("/", auth, multer, validity.checkSauceData, sauceController.createSauce);
+router.put("/:id", auth, validity.checkUserId, multer, validity.checkSauceData, sauceController.modifySauce);
 router.delete("/:id", auth, validity.checkUserId, sauceController.deleteSauce);
 router.post("/:id/like", auth, sauceController.likeAndDislikeSauce);
 

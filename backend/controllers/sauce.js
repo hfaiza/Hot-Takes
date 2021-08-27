@@ -51,7 +51,7 @@ const modifySauce = async (req, res) => {
 const deleteSauce = async (req, res) => {
   try {
     const sauce = await Sauce.findOne({ _id: req.params.id });
-    const filename = sauce.imageUrl.split("/images/")[1];
+    const filename = await sauce.imageUrl.split("/images/")[1];
     fs.unlink(`images/${filename}`, async () => {
       try {
         await Sauce.deleteOne({ _id: req.params.id });
