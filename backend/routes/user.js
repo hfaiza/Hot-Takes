@@ -1,10 +1,12 @@
 // Importation des modules nécessaires
 const express = require("express");
-const userController = require("../controllers/user");
-const validity = require("../middleware/check-data");
 const rateLimit = require("express-rate-limit");
 
-// Pour limiter à 3 le nombre de requêtes lors de la connexion
+// Importation des fichiers nécessaires
+const userController = require("../controllers/user");
+const validity = require("../middleware/check-data");
+
+// Pour limiter le nombre de requêtes lors de la connexion
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 3,

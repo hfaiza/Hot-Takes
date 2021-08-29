@@ -1,4 +1,4 @@
-// Importation du module nécessaire
+// Importation de Mongoose
 const mongoose = require("mongoose");
 
 // Création du schéma de sauce

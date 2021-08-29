@@ -1,14 +1,17 @@
 // Importation des modules nécessaires
 const express = require("express");
 const mongoose = require("mongoose");
-const userRoutes = require("./routes/user");
-const sauceRoutes = require("./routes/sauce");
 const path = require("path");
 const helmet = require("helmet");
+require("dotenv").config();
+
+// Importation des fichiers nécessaires
+const userRoutes = require("./routes/user");
+const sauceRoutes = require("./routes/sauce");
 
 // Accès aux variables d'environnement
-require("dotenv").config();
 const MONGODB_SECRET = process.env.MONGODB;
+const ORIGIN_SECRET = process.env.ALLOW_ORIGIN;
 
 // Création de l'application
 const app = express();
@@ -16,7 +19,7 @@ const app = express();
 // Utilisation de Helmet
 app.use(helmet());
 
-// Connexion à MongoDB :
+// Connexion à MongoDB Atlas :
 const mongooseConnect = async () => {
   try {
     await mongoose.connect(MONGODB_SECRET, {
@@ -35,7 +38,7 @@ mongooseConnect();
 
 // Ajout des headers nécessaires
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", process.env.ALLOW_ORIGIN);
+  res.setHeader("Access-Control-Allow-Origin", ORIGIN_SECRET);
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"

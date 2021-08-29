@@ -1,5 +1,7 @@
-// Importation des modules nécessaires
+// Importation d'Express
 const express = require("express");
+
+// Importation des fichiers nécessaires
 const sauceController = require("../controllers/sauce");
 const auth = require("../middleware/auth");
 const multer = require("../middleware/multer-config");

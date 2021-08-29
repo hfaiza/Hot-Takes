@@ -1,6 +1,8 @@
-// Importation des modules nécessaires
-const Sauce = require("../models/sauce");
+// Importation de File System
 const fs = require("fs");
+
+// Importation du fichier nécessaire
+const Sauce = require("../models/sauce");
 
 // Middleware de création d'une sauce
 const createSauce = async (req, res) => {
@@ -52,12 +54,12 @@ const deleteSauce = async (req, res) => {
   try {
     const sauce = await Sauce.findOne({ _id: req.params.id });
     const filename = sauce.imageUrl.split("/images/")[1];
-    fs.unlink(`images/${filename}`, async () => {
-      try {
-        await Sauce.deleteOne({ _id: req.params.id });
-        res.status(200).json({ message: "Sauce supprimée !" });
-      } catch (error) {
+    await Sauce.deleteOne({ _id: req.params.id });
+    fs.unlink(`images/${filename}`, (error) => {
+      if (error) {
         res.status(400).json({ error });
+      } else {
+        res.status(200).json({ message: "Sauce supprimée !" });
       }
     });
   } catch (error) {

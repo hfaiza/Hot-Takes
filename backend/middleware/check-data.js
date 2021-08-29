@@ -1,5 +1,8 @@
 // Importation des modules nécessaires
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+
+// Importation du fichier nécessaire
 const Sauce = require("../models/sauce");
 
 // Vérifie la validité de l'e-mail
@@ -40,7 +43,7 @@ const checkUserId = async (req, res, next) => {
     const sauceEditor = decodedToken.userId;
 
     if (sauceEditor != sauceCreator) {
-      res.status(403).json({ error: "Requête non autorisée." });
+      res.status(403).json({ error: "Seul le créateur de la sauce peut la modifier et la supprimer." });
     } else {
       next();
     }
@@ -49,33 +52,38 @@ const checkUserId = async (req, res, next) => {
   }
 };
 
+// Pour supprimer l'image du dossier si les données de la sauce sont invalides
+const deleteImage = (req) => {
+  fs.unlink(`images/${req.file.filename}`, (error) => {
+    if (error) throw error;
+  });
+};
+
 // Vérifie les données de la sauce avant son ajout/sa modification
 const checkSauceData = (req, res, next) => {
   const sauce = JSON.parse(req.body.sauce);
   const descriptionRegex = /^[\.a-zA-Z, ]{20,250}$/;
-  const description = sauce.description.trim();
 
-  if (descriptionRegex.test(description) == false) {
-    throw new Error(
-      "Description invalide. Seuls les lettres, espaces, points et virgules sont acceptés. Le texte doit contenir entre 20 et 250 caractères."
-    );
+  if (descriptionRegex.test(sauce.description.trim()) == false) {
+    deleteImage(req);
+    return res.status(403).json({
+      error:
+        "Description invalide. Seuls les lettres, espaces, points et virgules sont acceptés. Le texte doit contenir entre 20 et 250 caractères.",
+    });
   }
+  const shortValuesRegex = /^[a-zA-Z ]{5,40}$/;
 
-  delete sauce.heat;
-  delete sauce.userId;
-  delete sauce.description;
-
-  const valuesArray = Object.values(sauce);
-  const valuesRegex = /^[a-zA-Z ]{5,40}$/;
-
-  valuesArray.forEach((value) => {
-    value.trim();
-    if (valuesRegex.test(value) == false) {
-      throw new Error(
-        "Donnée invalide. Seuls les lettres et espaces sont acceptés. Le texte doit contenir entre 5 et 40 caractères."
-      );
-    }
-  });
+  if (
+    shortValuesRegex.test(sauce.name.trim()) == false ||
+    shortValuesRegex.test(sauce.manufacturer.trim()) == false ||
+    shortValuesRegex.test(sauce.mainPepper.trim()) == false
+  ) {
+    deleteImage(req);
+    return res.status(403).json({
+      error:
+        "Donnée invalide. Seuls les lettres et espaces sont acceptés. Le texte doit contenir entre 5 et 40 caractères.",
+    });
+  }
   next();
 };
 

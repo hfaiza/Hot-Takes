@@ -1,5 +1,7 @@
-// Importation des modules nécessaires
+// Importation du module HTTP
 const http = require("http");
+
+// Importation de l'application
 const app = require("./app");
 
 // Pour que l'application tourne sur le port spécifié

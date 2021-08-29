@@ -1,4 +1,4 @@
-// Importation du module nécessaire
+// Importation de Multer
 const multer = require("multer");
 
 // Pour générer l'extension des fichiers
