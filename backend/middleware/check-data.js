@@ -61,8 +61,13 @@ const deleteImage = (req) => {
 
 // Vérifie les données de la sauce avant son ajout/sa modification
 const checkSauceData = (req, res, next) => {
-  const sauce = JSON.parse(req.body.sauce);
-  const descriptionRegex = /^[\.a-zA-Z, ]{20,250}$/;
+  let sauce;
+  if (req.route.methods.post == true) {
+    sauce = JSON.parse(req.body.sauce);
+  } else if (req.route.methods.put == true) {
+    sauce = req.body;
+  }
+  const descriptionRegex = /^[\.a-zA-Z,' ]{20,250}$/;
 
   if (descriptionRegex.test(sauce.description.trim()) == false) {
     deleteImage(req);
@@ -71,7 +76,7 @@ const checkSauceData = (req, res, next) => {
         "Description invalide. Seuls les lettres, espaces, points et virgules sont acceptés. Le texte doit contenir entre 20 et 250 caractères.",
     });
   }
-  const shortValuesRegex = /^[a-zA-Z ]{5,40}$/;
+  const shortValuesRegex = /^[a-zA-Z' ]{5,40}$/;
 
   if (
     shortValuesRegex.test(sauce.name.trim()) == false ||
