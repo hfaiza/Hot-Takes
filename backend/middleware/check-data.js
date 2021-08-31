@@ -12,7 +12,7 @@ const checkEmail = (req, res, next) => {
   const regex =
     /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/;
   if (regex.test(userEmail) == false) {
-    res.status(403).json({ error: "E-mail invalide." });
+    res.status(400).json({ error: "E-mail invalide." });
   } else {
     next();
   }
@@ -23,7 +23,7 @@ const checkPassword = (req, res, next) => {
   const userPassword = req.body.password;
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,64}$/;
   if (regex.test(userPassword) == false) {
-    res.status(403).json({
+    res.status(400).json({
       error:
         "Mot de passe invalide. Il doit avoir entre 8 et 64 caractères et contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial.",
     });
@@ -69,9 +69,9 @@ const checkSauceData = (req, res, next) => {
   }
   const descriptionRegex = /^[\.a-zA-Z,' ]{20,250}$/;
 
-  if (descriptionRegex.test(sauce.description.trim()) == false) {
+  if (sauce.description && descriptionRegex.test(sauce.description.trim()) == false) {
     deleteImage(req);
-    return res.status(403).json({
+    return res.status(400).json({
       error:
         "Description invalide. Seuls les lettres, espaces, points et virgules sont acceptés. Le texte doit contenir entre 20 et 250 caractères.",
     });
@@ -79,12 +79,12 @@ const checkSauceData = (req, res, next) => {
   const shortValuesRegex = /^[a-zA-Z' ]{5,40}$/;
 
   if (
-    shortValuesRegex.test(sauce.name.trim()) == false ||
-    shortValuesRegex.test(sauce.manufacturer.trim()) == false ||
-    shortValuesRegex.test(sauce.mainPepper.trim()) == false
+    (sauce.name && shortValuesRegex.test(sauce.name.trim()) == false) ||
+    (sauce.manufacturer && shortValuesRegex.test(sauce.manufacturer.trim()) == false) ||
+    (sauce.mainPepper && shortValuesRegex.test(sauce.mainPepper.trim()) == false)
   ) {
     deleteImage(req);
-    return res.status(403).json({
+    return res.status(400).json({
       error:
         "Donnée invalide. Seuls les lettres et espaces sont acceptés. Le texte doit contenir entre 5 et 40 caractères.",
     });

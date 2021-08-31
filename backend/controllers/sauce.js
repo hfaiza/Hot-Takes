@@ -7,6 +7,9 @@ const Sauce = require("../models/sauce");
 // Middleware de création d'une sauce
 const createSauce = async (req, res) => {
   const sauceObject = JSON.parse(req.body.sauce);
+  if (req.file === undefined) {
+    return res.status(400).json({ error: "Requête invalide !" });
+  }
   const sauce = new Sauce({
     ...sauceObject,
     imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
