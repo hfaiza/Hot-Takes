@@ -78,6 +78,7 @@ const checkSauceData = (req, res, next) => {
   }
 
   if ((sauce.heat && sauce.heat < 1) || (sauce.heat && sauce.heat > 10) || (sauce.heat && sauce.heat == 0)) {
+    deleteImage(req);
     return res.status(400).json({
       error: "La force du piment ne peut être inférieure à 1 ou supérieure à 10.",
     });
