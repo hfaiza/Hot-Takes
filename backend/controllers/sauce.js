@@ -38,15 +38,24 @@ const getOneSauce = async (req, res) => {
 
 // Middleware de modification d'une sauce
 const modifySauce = async (req, res) => {
+  if (req.file) {
+    const sauce = await Sauce.findOne({ _id: req.params.id });
+    const filename = sauce.imageUrl.split("/images/")[1];
+    fs.unlink(`images/${filename}`, (error) => {
+      if (error) {
+        return res.status(400).json({ error });
+      }
+    });
+  }
   const sauceObject = req.file
     ? {
-        ...JSON.parse(req.body.sauce),
+        ...req.body,
         imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
       }
     : { ...req.body };
   try {
     await Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id });
-    res.status(200).json({ message: "Sauce modifiée !" });
+    return res.status(200).json({ message: "Sauce modifiée !" });
   } catch (error) {
     res.status(500).json({ error });
   }

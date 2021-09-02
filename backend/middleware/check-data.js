@@ -54,19 +54,29 @@ const checkUserId = async (req, res, next) => {
 
 // Pour supprimer l'image du dossier si les données de la sauce sont invalides
 const deleteImage = (req) => {
-  fs.unlink(`images/${req.file.filename}`, (error) => {
-    if (error) throw error;
-  });
+  if (req.file) {
+    fs.unlink(`images/${req.file.filename}`, (error) => {
+      if (error) throw error;
+    });
+  }
 };
 
 // Vérifie les données de la sauce avant son ajout/sa modification
 const checkSauceData = (req, res, next) => {
+  if (
+    (req.route.methods.post && req.body.sauce === undefined) ||
+    (req.route.methods.put && Object.keys(req.body).length === 0 && !req.file)
+  ) {
+    return res.status(400).json({ error: "Requête invalide !" });
+  }
+
   let sauce;
-  if (req.route.methods.post == true) {
+  if (req.route.methods.post) {
     sauce = JSON.parse(req.body.sauce);
-  } else if (req.route.methods.put == true) {
+  } else if (req.route.methods.put) {
     sauce = req.body;
   }
+
   const descriptionRegex = /^[\.a-zA-Z,' ]{20,250}$/;
 
   if (sauce.description && descriptionRegex.test(sauce.description.trim()) == false) {
